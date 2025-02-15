@@ -4,12 +4,13 @@ import 'package:ukk_2025/pages/Beranda.dart';
 import 'package:ukk_2025/pages/Login.dart';
 
 
-const supabaseUrl = 'https://vieoefwatdejclhshsfl.supabase.co';
-const supabaseKey = String.fromEnvironment('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpZW9lZndhdGRlamNsaHNoc2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MDgxNzgsImV4cCI6MjA1NDk4NDE3OH0.RmAZYSSZb5C9FTPJb44r8yTsZAEL9EJaf5td4W3ejAo');
 
-Future<void> main() async {
-  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
-  runApp(const MyApp());
+void main() async {
+  await Supabase.initialize(
+    url: 'https://vieoefwatdejclhshsfl.supabase.co', 
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpZW9lZndhdGRlamNsaHNoc2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MDgxNzgsImV4cCI6MjA1NDk4NDE3OH0.RmAZYSSZb5C9FTPJb44r8yTsZAEL9EJaf5td4W3ejAo'
+    );
+runApp(MyApp());
 }
 
 
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Tahu Bulat',
-      home: Login(),
+      home: Beranda(),
     );
   }
 }
