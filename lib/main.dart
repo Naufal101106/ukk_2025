@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ukk_2025/pages/Beranda.dart';
-import 'package:ukk_2025/pages/Login.dart';
+import 'package:ukk_2025/Beranda.dart';
+import 'package:ukk_2025/Login.dart';
 
 
 

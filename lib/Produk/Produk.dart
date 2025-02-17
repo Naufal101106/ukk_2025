@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ukk_2025/pages/Insert.dart';
+import 'package:ukk_2025/Produk/Insert.dart';
 
 class Produk extends StatefulWidget {
   const Produk({super.key});
@@ -100,7 +100,6 @@ class _ProdukState extends State<Produk> {
                           
                         });
                       }
-                      
                     }, 
                     child: Text('simpan') 
                     )
@@ -140,7 +139,21 @@ class _ProdukState extends State<Produk> {
       ),
 
       appBar: AppBar(
-        title: Text('Daftar Produk'),
+        title: Align(
+          alignment: Alignment.centerRight,
+          child: Container(
+            width: 310,
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Cari',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10)
+                )
+              ),
+            ),
+          ),
+        ),
       ),
 
       body: FutureBuilder(
