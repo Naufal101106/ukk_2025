@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Tahu Bulat',
-      home: Beranda(),
+      home: Login(),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ukk_2025/Produk/Insert.dart';
 
@@ -13,15 +14,78 @@ class Produk extends StatefulWidget {
 class _ProdukState extends State<Produk> {
   final SupabaseClient supabase = Supabase.instance.client;
   final _formkey = GlobalKey<FormState>();
+  List<dynamic> _produklist = [];
+  List<dynamic> _filterpelangganlist = [];
+  TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    fetchdata();
+    _searchController.addListener((){
+      searchProduk(_searchController.text);
+    });
+  }
 
   Future<List<Map<String, dynamic>>> fetchdata() async {
     try {
       final response = await supabase.from('produk').select('NamaProduk, Harga, Stok');
-
+      setState(() {
+        _filterpelangganlist = _produklist;
+      });
       return response as List<Map<String, dynamic>>;
     }catch (e) {
       print("Error: $e");
       return [];
+    }
+  }
+
+  void searchProduk(String query) {
+    final filtered = _produklist.where((product){
+      final namaProduk = product['NamaProduk'].toLowerCase();
+      final searchQuery = query.toLowerCase();
+      return namaProduk.contains(searchQuery);
+    }).toList();
+
+    setState(() {
+      _filterpelangganlist = filtered;
+    });
+  }
+
+  void deleteProduk(BuildContext content,String namaProduk) async {
+    try {
+      bool? confirmDelete = await  showDialog(
+        context: context, 
+        builder: (context) => AlertDialog(
+          title: Text('Konfirmasi Hapus'),
+          content: Text('Apakah Anda Yakin Ingin Menghapus Produk ini?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false), 
+              child: Text('Batal')
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true), 
+              child: Text('Hapus', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        )
+      );
+
+      if (confirmDelete == true) {
+        await supabase.from('produk').delete().eq('NamaProduk', namaProduk);
+        setState(() {
+          
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Produk Berhasil Dihapus'))
+        );
+      }
+    } catch (e) {
+      print('Error deleting product: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal Menghapus Produk'), backgroundColor: Colors.red,)
+      );
     }
   }
 
@@ -45,7 +109,7 @@ class _ProdukState extends State<Produk> {
                 children: [
                     TextFormField(
                       controller: namaController,
-                      decoration: InputDecoration(label: Text('Nama Produk')),
+                      decoration: const InputDecoration(label: Text('Nama Produk')),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Masukkan Nama Produk!';
@@ -58,6 +122,9 @@ class _ProdukState extends State<Produk> {
                       controller: hargaController,
                       decoration: InputDecoration(label: Text('Harga')),
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Masukkan Harga!';
@@ -70,6 +137,9 @@ class _ProdukState extends State<Produk> {
                       controller: stokController,
                       decoration: InputDecoration(label: Text('Stok')),
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Masukkan Stok!';
@@ -88,16 +158,15 @@ class _ProdukState extends State<Produk> {
             
                   ElevatedButton(
                     onPressed: () async {
-                      await supabase.from('produk').update({
-                        'NamaProduk' : namaController.text,
-                        'Harga' : int.parse(hargaController.text),
-                        'Stok' : int.parse(stokController.text),
-                      }).eq('NamaProduk', item['NamaProduk']);
-
                       if (_formkey.currentState!.validate()) {
+                        await supabase.from('produk').update({
+                          'NamaProduk' : namaController.text,
+                          'Harga' : int.parse(hargaController.text),
+                          'Stok' : int.parse(stokController.text),
+                        }).eq('NamaProduk', item['NamaProduk']);
                         Navigator.pop(context);
                         setState(() {
-                          
+                            
                         });
                       }
                     }, 
@@ -141,15 +210,19 @@ class _ProdukState extends State<Produk> {
       appBar: AppBar(
         title: Align(
           alignment: Alignment.centerRight,
-          child: Container(
-            width: 310,
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Cari',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10)
-                )
+          child: Padding(
+            padding: EdgeInsets.only(left: 28),
+            child: Container(
+              width: MediaQuery.of(context).size.width -40,
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Cari',
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10)
+                  )
+                ),
               ),
             ),
           ),
@@ -197,7 +270,7 @@ class _ProdukState extends State<Produk> {
                         
                         IconButton(
                           icon: Icon(Icons.delete, color: Colors.red,),
-                          onPressed: () {}
+                          onPressed: () => deleteProduk(context, item['NamaProduk'])
                           )
                         
                       ],

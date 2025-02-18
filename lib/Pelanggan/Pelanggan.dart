@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ukk_2025/Pelanggan/InsertPelanggan.dart';
 
@@ -23,6 +24,43 @@ class _PelangganState extends State<Pelanggan> {
     }catch (e) {
       print("Error: $e");
       return [];
+    }
+  }
+
+  void deletePelanggan(BuildContext content,String namaPelanggan) async {
+    try {
+      bool? confirmDelete = await  showDialog(
+        context: context, 
+        builder: (context) => AlertDialog(
+          title: Text('Konfirmasi Hapus'),
+          content: Text('Apakah Anda Yakin Ingin Menghapus Produk ini?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false), 
+              child: Text('Batal')
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true), 
+              child: Text('Hapus', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        )
+      );
+
+      if (confirmDelete == true) {
+        await supabase.from('pelanggan').delete().eq('NamaPelanggan', namaPelanggan);
+        setState(() {
+          
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Produk Berhasil Dihapus'))
+        );
+      }
+    } catch (e) {
+      print('Error deleting product: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal Menghapus Produk'), backgroundColor: Colors.red,)
+      );
     }
   }
 
@@ -71,6 +109,9 @@ class _PelangganState extends State<Pelanggan> {
                       controller: nomorteleponController,
                       decoration: InputDecoration(label: Text('Nomor Telepon')),
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Masukkan Nomor Telepon!';
@@ -88,20 +129,19 @@ class _PelangganState extends State<Pelanggan> {
                   ),
             
                   ElevatedButton(
-                    onPressed: () async {
-                      await supabase.from('produk').update({
+                    onPressed: () async{
+                      if (_formkey.currentState!.validate()){
+                        await supabase.from('pelanggan').update({
                         'NamaPelanggan' : namapelangganController.text,
                         'Alamat' : (alamatController.text),
-                        'Stok' : (nomorteleponController.text),
+                        'NomorTelepon' : (nomorteleponController.text),
                       }).eq('NamaPelanggan', item['NamaPelanggan']);
 
-                      if (_formkey.currentState!.validate()) {
                         Navigator.pop(context);
                         setState(() {
-                          
                         });
                       }
-                    }, 
+                    },
                     child: Text('simpan') 
                     )
               ],
@@ -141,15 +181,18 @@ class _PelangganState extends State<Pelanggan> {
       appBar: AppBar(
         title: Align(
           alignment: Alignment.centerRight,
-          child: Container(
-            width: 310,
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Cari',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10)
-                )
+          child: Padding(
+            padding: EdgeInsets.only(left: 28),
+            child: Container(
+              width: MediaQuery.of(context).size.width -40,
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Cari',
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10)
+                  )
+                ),
               ),
             ),
           ),
@@ -197,7 +240,7 @@ class _PelangganState extends State<Pelanggan> {
                         
                         IconButton(
                           icon: Icon(Icons.delete, color: Colors.red,),
-                          onPressed: () {}
+                          onPressed: () => deletePelanggan(context, item['NamaPelanggan'])
                           )
                         
                       ],
